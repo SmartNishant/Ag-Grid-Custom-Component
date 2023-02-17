@@ -12,9 +12,9 @@ interface OptionType {
 function App() {
   return (
     <div className="App">
-    {/* <CommanAgGridRelation  appDefId={112641} contentInsId={458768} relationContentInsId={434192} maxCardinality={5} /> */}
+    <CommanAgGridRelation  appDefId={112641} contentInsId={458768} relationContentInsId={434192} maxCardinality={5} />
     {/* <AgGridCellRender appDefId={112641} contentInsId={458768} isMultipleRelation={false} /> */}
-     <CommanAgGridRelation appDefId={112641} contentInsId={459792} relationContentInsId={434192} />
+     {/* <CommanAgGridRelation appDefId={112641} contentInsId={459792} relationContentInsId={434192} /> */}
     </div>
   );
 }

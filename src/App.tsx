@@ -1,24 +1,20 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import AgGridCellRender from './AgGridCellRender/AgGridCellRender'
+import CommanAgGridRelation from './AgGridCustomRelationShipWidget/CommanAgGridRelation';
+interface OptionType {
+  id: number,
+  key: string
+  label: string,
+  email?: string,
+}
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    {/* <CommanAgGridRelation  appDefId={112641} contentInsId={458768} relationContentInsId={434192} maxCardinality={5} /> */}
+    {/* <AgGridCellRender appDefId={112641} contentInsId={458768} isMultipleRelation={false} /> */}
+     <CommanAgGridRelation appDefId={112641} contentInsId={459792} relationContentInsId={434192} />
     </div>
   );
 }

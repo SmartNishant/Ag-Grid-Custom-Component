@@ -1,0 +1,60 @@
+.simpleSelect {
+  width: 100%;
+  background-color: #fff;
+  display: flex;
+  flex-wrap: wrap;
+  .textbox{
+    padding: 14px 0px 14px 5px;
+    display: flex;
+    align-items: flex-start;
+    min-width: 20rem;
+    border: 1px solid #1976d2;
+    background: #fff;
+  }
+  .dropdownContent {
+    position: fixed;
+    margin: 3rem 0 0;
+    padding: 0;
+    background: #fff;
+    box-shadow: 0 0 0 1px RGB(63 63 68 / 5%), 0 1px 3px 0 RGB(63 63 68 / 15%);
+    list-style-type: none;
+    z-index: 200;
+    min-width: 13rem;
+    /* max-height: 100px; */
+    /* overflow: scroll; */
+    .option {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      &:hover {background-color: #f1f1f1; cursor: pointer;}
+      &:focus {background-color: #f1f1f1; cursor: pointer;}
+      
+.closebtn {
+  padding-left: 10px;
+  color: #888;
+  font-weight: bold;
+  float: right;
+  font-size: 20px;
+  cursor: pointer;
+}
+      #myInput {
+        box-sizing: border-box;
+        background-image: url('https://squad1e.emgage-dev2.com/api/v1/appdefs/2049/contentinses/3088/items/2909204/file');
+        background-position: 14px 12px;
+        background-repeat: no-repeat;
+        font-size: 16px;
+        padding: 14px 20px 12px 45px;
+        border: none;
+        border-bottom: 1px solid #ddd;
+        &:focus {outline: 3px solid #ddd;}
+      }
+    }
+    .activeOption{
+      background-color: #f1f1f1; cursor: pointer;
+    
+    }
+  }
+}
+
+

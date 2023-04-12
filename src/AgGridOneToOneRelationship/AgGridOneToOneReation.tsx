@@ -227,7 +227,7 @@ export default function AgGridOneToOneReation({ appDefId,contentInsId, relationC
 
               payload.Field = { ID: event?.columnApi?.columnModel?.columnDefs?.[0]?.id, Value: event.data[event?.columnApi?.columnModel?.columnDefs?.[0]?.field] }
               console.log({payload})
-              await updateContenntItem(appDefId, contentInsId, JSON.stringify(payload))
+              await updateContenntItem(appDefId, contentInsId, payload)
               getData()
             }
           }}

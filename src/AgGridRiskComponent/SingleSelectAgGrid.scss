@@ -15,17 +15,18 @@
   }
 
   .dropdownContent {
-    position: fixed;  
+    position: absolute;
     // margin: 5rem 0 0;
     padding: 0;
     background: #fff;
     box-shadow: 0 0 0 1px RGB(63 63 68 / 5%), 0 1px 3px 0 RGB(63 63 68 / 15%);
     list-style-type: none;
     z-index: 200;
-    width: 20rem;
-    // min-width: 13rem;
+    width: 100%;
+    min-width: 13rem;
 
-    // max-height: 100px; 
+    /* max-height: 100px; */
+    /* overflow: scroll; */
     .loadBtn {
       font-family: 'Open Sans';
       font-style: 'Regular';
@@ -43,10 +44,7 @@
       text-decoration: none;
       display: flex;
       align-items: flex-start;
-      width: 20rem;
-      word-break: break-word;
-      white-space: pre-line;
-      overflow-wrap: break-word;
+
       &:hover {
         background-color: #f1f1f1;
         cursor: pointer;
@@ -69,16 +67,12 @@
       #myInput {
         box-sizing: border-box;
         background-image: url('https://squad1e.emgage-dev2.com/api/v1/appdefs/2049/contentinses/3088/items/2909204/file');
-        background-position: 0px 12px;
+        background-position: 14px 12px;
         background-repeat: no-repeat;
         font-size: 16px;
-        padding: 14px 0px 12px 25px;
+        padding: 14px 20px 12px 45px;
         border: none;
-        width: 20rem;
         border-bottom: 1px solid #ddd;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
 
         &:focus {
           outline: 3px solid #ddd;

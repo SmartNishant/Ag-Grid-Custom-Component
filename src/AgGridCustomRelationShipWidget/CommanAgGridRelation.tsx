@@ -2,10 +2,11 @@
 import { AgGridReact } from "ag-grid-react";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
+import {Dropdown} from 'engage-ui'
+import './CommanAgGridComponent.scss'
+import {GridApi,IRowNode} from 'ag-grid-community'
 import React, {
-  forwardRef,
   useEffect,
-  useImperativeHandle,
   useRef,
   useState
 } from "react";
@@ -38,13 +39,15 @@ interface RelationType {
   ContentInsRelationshipInsID?: number,
 
 }
+interface FieldValueType {
+  ID?: number
+  Value?: string
+}
+
 interface PayloadType {
   "ItemIDs": number[], // contentitemId
   "Publish": boolean,
-  "Field": {
-    ID?: number
-    Value?: string
-  }, // field with relation id and udated payload
+  "Fields": FieldValueType[], // field with relation id and udated payload
   "AddRelationships": RelationType[],
   "ReplaceRelationships": RelationType[],
   "RemoveRelationships": RelationType[],
@@ -52,138 +55,164 @@ interface PayloadType {
     ContentInsRelationshipInsID?: number
   }[]
 }
+let count=0
 export default function CommanAgGridRelation({ appDefId, contentInsId, relationContentInsId, maxCardinality }: AgGridCustomRelationShipWidget) {
-  const rowData = [
-    { make: "Toyota", model: "Celica", price: 'smith' },
-  ];
   const gridRef: any = useRef(null)
   const [rows, setRows] = useState<ValueType[]>([]);
-  const [payload, setPaylod] = useState<PayloadType>(
-    {
+  const [gridApi,setGridApi]=useState<any>()
+  const getDefaultPayloadData=()=>{
+    return   {
       "ItemIDs": [], // contentitemId
       "Publish": true,
-      "Field": {}, // field with relation id and udated payload
+      "Fields": [], // field with relation id and udated payload
       "AddRelationships": [],
       "ReplaceRelationships": [],
       "RemoveRelationships": [],
       "RemoveAllRelationships": []
     }
-  )
+  }
+  const [payload, setPaylod] = useState<PayloadType>(getDefaultPayloadData())
+
+  const [multiSelectValue,setMultiSelectValue]=useState([])
+  const [singleSelectValue,setSingleSelectValue]=useState('')
+
   const [columnDef, setColumnDef] = useState<any>([]);
+  
+  console.log('column outside=======================>', columnDef)
   const getRelationshipAttribute = (relationId: number, primitiveId: number,maxCardinality: number,minCardinality: number) => {
-    if(maxCardinality ===-1 && minCardinality ===0){
-        return {
-            sortable: true,
-            cellRenderer: CustomCellComponet,
-            cellRendererParams: {
-              isMultipleRelation: true
-            },
-            cellEditorPopup: true,
-            cellEditorParams: {
-              appDefId,
-              contentInsId,
-              relationContentInsId: relationId,
-              primitiveId,
-              maxCardinality,
-              handleChangeEvent: (key: string, leftContentItemID: number, rightContentItemID: number, contentInsRelationshipInsID: number) => {
-                //  hadnleChange(key,leftContentItemID,rightContentItemID,contentInsRelationshipInsID)
-                let payloadData: any = payload
-                let isAlreadyAvailable = false
-                let filterPayload
-                debugger
-                if (key === 'RemoveRelationships') {
-                  filterPayload = payloadData.AddRelationships.filter((item: any) => item.RightContentItemID !== rightContentItemID)
-                  if (filterPayload.length !== payloadData.AddRelationships.length) {
-                    isAlreadyAvailable = true
-      
-                    payloadData.AddRelationships = filterPayload
-                  }
-                }
-                else if (key === 'AddRelationships') {
-                  filterPayload = payloadData.RemoveRelationships.filter((item: any) => item.RightContentItemID !== rightContentItemID)
-                  if (filterPayload.length !== payloadData.RemoveRelationships.length) {
-      
-                    isAlreadyAvailable = true
-                    payloadData.RemoveRelationships = filterPayload
-                  }
-                }
-                if (!isAlreadyAvailable) {
-                  payloadData?.[key]?.push({
-                    "LeftContentItemID": leftContentItemID, "RightContentItemID": rightContentItemID, "ContentInsRelationshipInsID": contentInsRelationshipInsID
-      
-                  })
-                }
-                setPaylod(payloadData)
-              }
-            },
-            cellEditor: ClinCellEditor,
-            editable: true,
-            suppressKeyboardEvent: (e: any) => {
-              console.log('current key ========>', e)
-              console.log('shift key ========>', e.event.shiftKey)
-              console.log('tab key ========>', e.event.keyCode)
-              console.log('grid ref ========>', gridRef.current)
-      
-      
-              // console.log('active element', document.activeElement)
-              //document.activeElement?.tagName.toLocaleLowerCase()!=="input"
-              if (e.event.keyCode === 9 || e.event.shiftKey) {
-                console.log('inside condi--------------------------------------')
-                gridRef?.current?.api?.stopEditing()
-                return true
-              } else {
-                console.log('else condi--------------------------------------')
-      
-                return false
-              }
-            },
-          }
-      }else if(maxCardinality ===1 && minCardinality===1){
+    console.log({maxCardinality})
+    console.log({minCardinality})
+   
+    if((maxCardinality===1)){
         return {
             sortable: true,
             cellEditorPopup: true,
             cellEditorParams:{
               appDefId,
               contentInsId,
+              primitiveId,
               relationContentInsId: relationId,
-              handleChangeEvent: (leftContentItemID: number,rightContentItemID: number,contentInsRelationshipInsID: number, data: any)=>{
-                debugger
-                console.log({rightContentItemID})
+              handleChangeEvent: (leftContentItemID: number,rightContentItemID: number,contentInsRelationshipInsID: number, data: any, key: string,option: any,rowIndex: number)=>{
+                let payloadData: any= getDefaultPayloadData()
+                
+                console.log('update===================================================================>', key,option)
                 console.log({data})
-               let payloadData=payload
-               if(data.userRelationIds[0]!==rightContentItemID){
-                payloadData.AddRelationships=[{
-                  "LeftContentItemID": leftContentItemID, "RightContentItemID": rightContentItemID, "ContentInsRelationshipInsID": contentInsRelationshipInsID
-        
-                }]
-                if(data?.userRelationIds){
-                payloadData.RemoveRelationships=[{
-                  "LeftContentItemID": leftContentItemID, "RightContentItemID": data?.userRelationIds?.[0], "ContentInsRelationshipInsID": contentInsRelationshipInsID
-        
-                }]
+                console.log({rightContentItemID})
+                console.log('data id:>', data[`${key}RelationIds`])
+                if (data[key] !== option.label) {
+
+                  let relationId = data?.[`${key}RelationIds`]?.[0]
+                    console.log('inside the condition======================>')
+                    payloadData.AddRelationships = [{
+                      "LeftContentItemID": leftContentItemID, "RightContentItemID": rightContentItemID, "ContentInsRelationshipInsID": contentInsRelationshipInsID
+
+                    }]
+                    if(relationId){
+                    payloadData.RemoveRelationships = [{
+                      "LeftContentItemID": leftContentItemID, "RightContentItemID": relationId, "ContentInsRelationshipInsID": contentInsRelationshipInsID
+
+                    }]
+                   
+                  }
+                }
+                console.log({payloadData})
+                // updateOneRecord(option.label,key,rowIndex)
+                setSingleSelectValue(option.label)
+                setPaylod(payloadData)
+               
               }
-                setPaylod(payload)
-               }
+            },
+            suppressKeyboardEvent: (e: any) => {
+              if (e.event.keyCode===13) {
+                return true
+              } else {
+                return false
               }
             },
             cellEditor: SingleRelationSelect,
             editable: true,
            }
-      }
+    }else if(maxCardinality>1 || maxCardinality===-1){
+      return {
+          sortable: true,
+          cellRenderer: CustomCellComponet,
+          cellRendererParams: {
+            isMultipleRelation: true
+          },
+          cellEditorPopup: true,
+          cellEditorParams: {
+            appDefId,
+            contentInsId,
+            relationContentInsId: relationId,
+            primitiveId,
+            maxCardinality,
+            handleChangeEvent: (options: any, contentInsRelationshipInsID: number,key: string,currentData: any,rowIndex: number,isParent: boolean) => {
+              console.log({currentData})
+              console.log({key})
+              console.log({options})
+                let payloadData: any= getDefaultPayloadData()
+                let optionsID: number[]=[]
+                 options.forEach((item: any) => {
+                  if(currentData[key]){
+                    optionsID.push(item.id)
+                  }
+                    if(!currentData[key] ||!currentData?.[`${key}RelationIds`]?.includes(item.id)){
+                      payloadData.AddRelationships.push({
+                      "LeftContentItemID": currentData.id, "RightContentItemID": item.id, "ContentInsRelationshipInsID": contentInsRelationshipInsID
+
+                      })
+                    }
+                });
+                if((optionsID.length || options.length===0) && currentData?.[key]?.length){
+                currentData?.[key]?.forEach((item: any) => {
+                    if(!optionsID?.includes(item.id) || options.length===0){
+                      payloadData.RemoveRelationships.push({
+                      "LeftContentItemID": currentData.id, "RightContentItemID": item.id, "ContentInsRelationshipInsID": contentInsRelationshipInsID
+
+                      })
+                    }
+                });
+              }
+              console.log('payload data==============================>', payloadData)
+              setMultiSelectValue(options)
+              setPaylod(payloadData)
+            }
+          },
+          cellEditor: ClinCellEditor,
+          editable: true,
+          suppressKeyboardEvent: (e: any) => {
+            let totalOptions: any=document.querySelector('#chipWrapperDiv')?.childNodes.length;
+            console.log({totalOptions})
+            if(e.event.keyCode === 9 && e.event.shiftKey){
+              console.log('inside count==========================>')
+              count=count + 1
+            } 
+            console.log('count=======================>',count)
+            if ((document.querySelectorAll('.ativeChip').length && e.event.keyCode === 9) || (count<=totalOptions && e.event.keyCode === 9 && e.event.shiftKey) || e.event.keyCode===13) {
+              return true
+            } else {
+              return false
+            }
+            
+          },
+        }
+    }
   
   }
   const getData = async (search?: any) => {
     const infoResponse = await getInfo(appDefId, contentInsId)
     let columns: any = []
-    infoResponse?.data?.fields?.map((field: any) => {
-
+    infoResponse?.data?.fields?.map(async (field: any) => {
+      console.log({infoResponse})
       if (!Object.keys(field).includes('fieldValueType')) {
+        if(field.entityState.itemName!=="Deleted"){
         if (field.fieldType.itemName.toLowerCase() === "relationship") {
           columns.push({
             id: field.id,
             'field': field.name,
             ...getRelationshipAttribute(field?.right?.joinContentIns?.id, JSON.parse(field?.right?.joinContentIns?.contentItemLabelFormula)?.[0],field?.right.maxCardinality,field?.right.minCardinality)
           })
+
         } else if (Object.keys(field).includes('primitives')) {
           columns.push({
             id: field?.primitives?.[0]?.id,
@@ -196,11 +225,12 @@ export default function CommanAgGridRelation({ appDefId, contentInsId, relationC
           })
         }
       }
+      }
     })
     const query = { "sort": [{ "label.keyword": { "order": "asc" } }], "size": 10, "query": { "bool": { "must": [{ "terms": { "entityState.itemID": [5] } }, { "term": { "isCurrentVersion": true } }, { "simple_query_string": { "query": search ? search + "*" : '*', "default_operator": "and", "fields": ["label"] } }], "must_not": [{ "exists": { "field": "ownerContentDef" } }] } }, "from": 0 }
     const response = await axios.get(`/${appDefId}/contentinses/${contentInsId}/items?query=${JSON.stringify(query)}`)
     let options: ValueType[] = []
-    let obj = {}, user: any[] = [], relationIds: number[] = [];
+    let obj = {}, user: any[] = [], singleValue='',relationIds: number[] = [];
     response.data.results.forEach((item: any) => {
 
       obj = {
@@ -210,16 +240,18 @@ export default function CommanAgGridRelation({ appDefId, contentInsId, relationC
         if (column?.cellEditorParams && Object.keys(column.cellEditorParams).includes('relationContentInsId')) {
 
           item?.[column.id]?.forEach((value: any) => {
+            console.log("ismultiple:>",column?.cellRendererParams?.isMultipleRelation)
             if(Boolean(column?.cellRendererParams?.isMultipleRelation))
               user.push({ label: value?.rightContentItem?.label, id: value?.rightContentItem?.id })
             else 
-              user.push(value?.rightContentItem?.label)
+            singleValue=value?.rightContentItem?.label
 
             relationIds.push(value?.rightContentItem?.id)
           })
-          Object.assign(obj, { [column.field]: user, [`${column.field}RelationIds`]: relationIds })
+          Object.assign(obj, { [column.field]: user.length>0?user:singleValue, [`${column.field}RelationIds`]: relationIds })
           user = []
           relationIds = []
+          singleValue = ''
         } else {
           Object.assign(obj, {
             [column.field]: item[column.id]
@@ -232,30 +264,46 @@ export default function CommanAgGridRelation({ appDefId, contentInsId, relationC
       options.push(obj)
 
     })
-    console.log({columns})
-
-    setColumnDef(columns)
     console.log({options})
+    setColumnDef(columns)
     setRows(options)
   }
 
   useEffect(() => {
-
-
     getData()
   }, [])
-
+  const pickExistingRowNodeAtRandom=(gridApi: GridApi, rowIndex: number)=> {
+    var allItems: IRowNode[] = [];
+    console.log('pick existing row================>',gridApi)
+    gridApi.forEachLeafNode(function (rowNode) {
+      allItems.push(rowNode);
+    });
+  
+    if (allItems.length === 0) {
+      return;
+    }
+    var result = allItems[rowIndex];
+  
+    return result;
+  }
+  
+  const updateOneRecord=(value: any, field: string, rowIndex: number)=>{
+    var rowNodeToUpdate = pickExistingRowNodeAtRandom(gridRef.current.api!, rowIndex);
+    console.log('row update=============================>',rowNodeToUpdate)
+    if (!rowNodeToUpdate) return;
+  
+    rowNodeToUpdate.setDataValue(field, value);
+  }
+  const onGridReady=(params: any)=>{
+    setGridApi(params)
+  }
   return (
     <div className="App">
-      <div className="ag-theme-alpine" style={{ height: 1000, width: '100%' }}>
+      <div className={`agGridRootWrapper ag-theme-alpine`} style={{ height: 1000, width: '100%' }}>
         <AgGridReact
           ref={gridRef}
-          // getRowHeight={onGridReady}
           rowData={rows}
-          // frameworkComponents={[{
-          //   clinCellEditor: ClinCellEditor,
-          //   SingleRelationSelect: SingleRelationSelect
-          // }]}
+          onGridReady={onGridReady}
           defaultColDef={{
             flex: 1,
             sortable: true,
@@ -264,19 +312,50 @@ export default function CommanAgGridRelation({ appDefId, contentInsId, relationC
             autoHeight: true
           }}
           domLayout="autoHeight"
-          // tabToNextCell={tabToNextCell}
           columnDefs={columnDef}
+          onCellKeyDown={(params: any)=>{
+            if(params.event.keyCode === 13) {
+              var currentCell = params.api.getFocusedCell();
+              var finalRowIndex = params.api.paginationGetRowCount()-1;
+              if (currentCell.rowIndex === finalRowIndex) {
+                  return;
+              }
+              params.api.stopEditing();
+              params.api.clearFocusedCell();
+        
+              params.api.startEditingCell({
+                rowIndex: Number.parseInt(currentCell.rowIndex),
+                colKey:currentCell.column.colId
+              });
+          }
+          }}
+          onCellEditingStarted={()=>{
+            count=0
+          }}
           onCellEditingStopped={async (event: any) => {
-            console.log({ event })
+            try {
             if (payload.AddRelationships.length || payload.RemoveRelationships.length || payload.ReplaceRelationships.length) {
               payload.ItemIDs = [event?.data?.id]
-           
-              payload.Field = { ID: event?.columnApi?.columnModel?.columnDefs?.[0]?.id, Value: event.data[event?.columnApi?.columnModel?.columnDefs?.[0]?.field] }
+              console.log('column:>',event?.columnApi?.columnModel?.columnDefs)
+              payload.Fields = []
+             
+              console.log("inside cell editor :>",payload)
+              event.api.showLoadingOverlay();
+              let updatedResponse=await updateContenntItem(appDefId, contentInsId, payload)
+              event.api.hideOverlay();
+              if(updatedResponse.status===202){
+                 updateOneRecord(event?.colDef?.cellRendererParams?.isMultipleRelation ?multiSelectValue:singleSelectValue,event.colDef.field,event.rowIndex)
+              }
+              setPaylod(getDefaultPayloadData())
 
-              await updateContenntItem(appDefId, contentInsId, JSON.stringify(payload))
-              getData()
             }
+          } catch (error) {
+            console.log({error})
+            event.api.hideOverlay();
+            setPaylod(getDefaultPayloadData())
+          }
           }}
+          singleClickEdit
         stopEditingWhenCellsLoseFocus={true}
         />
       </div>

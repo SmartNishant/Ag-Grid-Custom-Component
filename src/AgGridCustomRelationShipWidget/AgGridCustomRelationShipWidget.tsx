@@ -256,7 +256,7 @@ export default function AgGridCustomRelationShipWidget({ appDefId, contentInsId,
 
               payload.Field = { ID: event?.columnApi?.columnModel?.columnDefs?.[0]?.id, Value: event.data[event?.columnApi?.columnModel?.columnDefs?.[0]?.field] }
 
-              await updateContenntItem(appDefId, contentInsId, JSON.stringify(payload))
+              await updateContenntItem(appDefId, contentInsId,payload)
               getData()
             }
           }}

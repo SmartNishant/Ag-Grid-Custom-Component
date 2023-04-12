@@ -1,0 +1,22 @@
+.riskWrapper {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+
+        .riskChip {
+            align-items: center;
+            margin-left: 10px;
+            color: #FFF;
+            height: 20px;
+            display: inline-flex;
+            justify-content: center;
+            background-color: #d1d5db;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 13px;
+            line-height: 16px;
+            .riskchipContent {
+                margin-right: 0.25rem;
+            }
+        }
+    }

@@ -1,0 +1,47 @@
+
+  .grid-wrapper {
+    flex: 1 1 auto;
+    #hiddenEle{
+      &:hover{
+        border: 1px solid red;
+      }
+    }
+  
+  .agGridRootWrapper{
+    .ag-row-level-1  {
+     overflow-y: visible !important;
+    }
+    }
+    
+  .ag-details-row > div{
+    .deficiencyTitle{
+      font-weight: normal;
+      padding: 5px;
+    }
+    .addDeficiencyButton{
+      display: flex;
+      padding: 5px;
+      align-items: center;
+     justify-content: flex-start;
+     button{
+      background-color: transparent;
+      outline: none;
+      border: none;
+      color: #1976d2;
+      font-size: 16px;
+      line-height: 25px;
+      cursor: pointer;
+      // &:focus{
+      //   color: red !important;
+      // }
+     }
+     cursor: pointer;
+     .plusIcon{
+      margin-bottom: -3px;
+     }
+    }
+    .ag-large-text-input{
+     padding: 0px !important;
+   }
+  }
+}
